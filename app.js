@@ -74,6 +74,7 @@ const defaultState = {
   completedWeeks: {},
   attempts: [],
   activity: {},
+  monochrome: false,
 };
 
 let state = loadState();
@@ -465,6 +466,13 @@ function showToast(message) {
   toastTimer = setTimeout(() => toast.classList.remove("show"), 2400);
 }
 
+function setMonochrome(enabled) {
+  state.monochrome = enabled;
+  document.body.classList.toggle("monochrome", enabled);
+  document.getElementById("monoButton").textContent = enabled ? "Color mode" : "B/W mode";
+  saveState();
+}
+
 function handleQuestionSubmit(event) {
   event.preventDefault();
   const form = event.currentTarget;
@@ -513,6 +521,11 @@ function bindEvents() {
   document.getElementById("closeLogModal").addEventListener("click", () => document.getElementById("logModal").close());
   document.getElementById("questionForm").addEventListener("submit", handleQuestionSubmit);
   document.getElementById("mobileMenu").addEventListener("click", () => document.querySelector(".sidebar").classList.toggle("open"));
+  document.getElementById("monoButton").addEventListener("click", () => {
+    const enabled = !state.monochrome;
+    setMonochrome(enabled);
+    showToast(enabled ? "B/W mode on." : "Color mode on.");
+  });
   document.getElementById("focusButton").addEventListener("click", (event) => {
     document.body.classList.toggle("focus-mode");
     event.currentTarget.textContent = document.body.classList.contains("focus-mode") ? "Exit focus" : "Focus view";
@@ -522,6 +535,7 @@ function bindEvents() {
 function initialize() {
   const now = new Date();
   document.getElementById("todayLabel").textContent = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }).toUpperCase();
+  setMonochrome(Boolean(state.monochrome));
   setResourceLinks();
   bindEvents();
   renderDashboard();
