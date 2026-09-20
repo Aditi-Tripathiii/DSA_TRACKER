@@ -37,6 +37,12 @@ const BLOGS = [
 
 const PLAYBACK_SPEED = 1.5;
 const DEFAULT_PROBLEM_MINUTES = 45;
+const DEFAULT_SETTINGS = {
+  playbackSpeed: PLAYBACK_SPEED,
+  defaultProblemMinutes: DEFAULT_PROBLEM_MINUTES,
+  dailyCapacityHours: 2,
+  tuesdayCapacityHours: 4,
+};
 
 // Source durations are the public 100x course video runtimes in seconds.
 // The planner converts them to a watch estimate at the playback speed above.
@@ -75,6 +81,7 @@ const defaultState = {
   attempts: [],
   activity: {},
   monochrome: false,
+  settings: { ...DEFAULT_SETTINGS },
 };
 
 let state = loadState();
@@ -103,6 +110,21 @@ function getDateKey(date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).toISOString().slice(0, 10);
 }
 
+function getSettings() {
+  return { ...DEFAULT_SETTINGS, ...(state.settings || {}) };
+}
+
+function boundedNumber(value, minimum, maximum, fallback) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return fallback;
+  return Math.min(maximum, Math.max(minimum, number));
+}
+
+function weeklyCapacityMinutes() {
+  const settings = getSettings();
+  return ((settings.dailyCapacityHours * 6) + settings.tuesdayCapacityHours) * 60;
+}
+
 function formatMinutes(minutes) {
   const rounded = Math.max(0, Math.round(minutes));
   const hours = Math.floor(rounded / 60);
@@ -117,17 +139,17 @@ function formatCompactHours(minutes) {
 
 function lessonMinutesAtSpeed(week, lessonIndex) {
   const sourceSeconds = week.durations[lessonIndex] || 0;
-  return sourceSeconds ? Math.ceil(sourceSeconds / (60 * PLAYBACK_SPEED)) : 90;
+  return sourceSeconds ? Math.ceil(sourceSeconds / (60 * getSettings().playbackSpeed)) : 90;
 }
 
 function lessonTimingLabel(week, lessonIndex) {
   const sourceSeconds = week.durations[lessonIndex] || 0;
   if (!sourceSeconds) return "90m flexible study block";
-  return `${formatMinutes(lessonMinutesAtSpeed(week, lessonIndex))} at ${PLAYBACK_SPEED}×`;
+  return `${formatMinutes(lessonMinutesAtSpeed(week, lessonIndex))} at ${getSettings().playbackSpeed}x`;
 }
 
 function expectedProblemMinutes() {
-  return DEFAULT_PROBLEM_MINUTES;
+  return getSettings().defaultProblemMinutes;
 }
 
 function getSessions(weekIndex) {
@@ -203,14 +225,16 @@ function renderDashboard() {
   const cfDone = getAttemptsBySource("100x / Codeforces");
   const estimatedMinutes = currentWeekEstimatedMinutes();
   const completedMinutes = completedEstimatedMinutesForCurrentWeek();
-  const remainingCapacity = Math.max(0, (16 * 60) - estimatedMinutes);
+  const settings = getSettings();
+  const capacityMinutes = weeklyCapacityMinutes();
+  const remainingCapacity = Math.max(0, capacityMinutes - estimatedMinutes);
 
   document.getElementById("heroWeek").textContent = String(state.currentWeek).padStart(2, "0");
   document.getElementById("heroTitle").textContent = week.title;
   document.getElementById("heroDescription").textContent = week.note;
   document.getElementById("heroTopic").textContent = week.topic.toUpperCase();
   document.getElementById("lessonCount").textContent = `${week.lessons.length} lessons planned`;
-  document.getElementById("weeklyEstimate").textContent = `~${formatMinutes(estimatedMinutes)} planned at ${PLAYBACK_SPEED}x`;
+  document.getElementById("weeklyEstimate").textContent = `~${formatMinutes(estimatedMinutes)} planned at ${settings.playbackSpeed}x`;
   document.getElementById("weekProgressBar").style.width = `${progress.percentage}%`;
   document.getElementById("weekProgressLabel").textContent = `${progress.complete} of ${progress.total} sessions complete`;
   document.getElementById("weekProgressPercent").textContent = `${progress.percentage}%`;
@@ -221,8 +245,12 @@ function renderDashboard() {
   document.getElementById("cfDone").textContent = cfDone;
   document.getElementById("cfProgress").style.width = `${Math.min(cfDone * 7, 100)}%`;
   document.getElementById("weekHours").textContent = formatCompactHours(estimatedMinutes);
-  document.getElementById("hoursProgress").style.width = `${Math.min((estimatedMinutes / (16 * 60)) * 100, 100)}%`;
+  document.getElementById("weeklyCapacityStat").textContent = formatCompactHours(capacityMinutes);
+  document.getElementById("weeklyCapacity").textContent = `${formatCompactHours(capacityMinutes)} hours`;
+  document.getElementById("availabilityLabel").textContent = `${settings.dailyCapacityHours}h daily - ${settings.tuesdayCapacityHours}h Tuesday`;
+  document.getElementById("hoursProgress").style.width = `${Math.min((estimatedMinutes / capacityMinutes) * 100, 100)}%`;
   document.getElementById("weekEstimateCaption").textContent = `${formatMinutes(remainingCapacity)} buffer - ${formatMinutes(completedMinutes)} checked off`;
+  document.getElementById("methodNote").innerHTML = `<strong>Planning rule:</strong> video time is source duration / ${settings.playbackSpeed}x. Each problem is estimated at ${settings.defaultProblemMinutes}m unless you enter a specific time in the practice log.`;
 
   renderSessions();
   renderTodayTask();
@@ -497,6 +525,31 @@ function handleQuestionSubmit(event) {
   showToast("Problem added to your practice log.");
 }
 
+function syncPlannerForm() {
+  const settings = getSettings();
+  document.getElementById("playbackSpeed").value = settings.playbackSpeed;
+  document.getElementById("defaultProblemMinutes").value = settings.defaultProblemMinutes;
+  document.getElementById("dailyCapacity").value = settings.dailyCapacityHours;
+  document.getElementById("tuesdayCapacity").value = settings.tuesdayCapacityHours;
+}
+
+function handlePlannerSubmit(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  state.settings = {
+    playbackSpeed: boundedNumber(form.playbackSpeed.value, 0.5, 3, DEFAULT_SETTINGS.playbackSpeed),
+    defaultProblemMinutes: boundedNumber(form.defaultProblemMinutes.value, 5, 300, DEFAULT_SETTINGS.defaultProblemMinutes),
+    dailyCapacityHours: boundedNumber(form.dailyCapacity.value, 0.5, 12, DEFAULT_SETTINGS.dailyCapacityHours),
+    tuesdayCapacityHours: boundedNumber(form.tuesdayCapacity.value, 0.5, 12, DEFAULT_SETTINGS.tuesdayCapacityHours),
+  };
+  saveState();
+  syncPlannerForm();
+  document.getElementById("plannerModal").close();
+  renderDashboard();
+  renderRoadmap();
+  showToast("Planner estimates updated.");
+}
+
 function bindEvents() {
   document.querySelectorAll(".nav-link").forEach((button) => button.addEventListener("click", () => showView(button.dataset.view)));
   document.querySelectorAll("[data-view-link]").forEach((link) => link.addEventListener("click", () => showView("dashboard")));
@@ -520,6 +573,12 @@ function bindEvents() {
   document.getElementById("openLogModal").addEventListener("click", () => document.getElementById("logModal").showModal());
   document.getElementById("closeLogModal").addEventListener("click", () => document.getElementById("logModal").close());
   document.getElementById("questionForm").addEventListener("submit", handleQuestionSubmit);
+  document.getElementById("plannerSettings").addEventListener("click", () => {
+    syncPlannerForm();
+    document.getElementById("plannerModal").showModal();
+  });
+  document.getElementById("closePlannerModal").addEventListener("click", () => document.getElementById("plannerModal").close());
+  document.getElementById("plannerForm").addEventListener("submit", handlePlannerSubmit);
   document.getElementById("mobileMenu").addEventListener("click", () => document.querySelector(".sidebar").classList.toggle("open"));
   document.getElementById("monoButton").addEventListener("click", () => {
     const enabled = !state.monochrome;
@@ -535,6 +594,7 @@ function bindEvents() {
 function initialize() {
   const now = new Date();
   document.getElementById("todayLabel").textContent = now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }).toUpperCase();
+  state.settings = getSettings();
   setMonochrome(Boolean(state.monochrome));
   setResourceLinks();
   bindEvents();

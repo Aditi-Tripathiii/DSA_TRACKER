@@ -42,8 +42,8 @@
         <div class="sidebar-foot">
           <div class="mini-target">
             <span class="eyebrow">weekly capacity</span>
-            <strong>16 hours</strong>
-            <span>2h daily · 4h Tuesday</span>
+            <strong id="weeklyCapacity">16 hours</strong>
+            <span id="availabilityLabel">2h daily · 4h Tuesday</span>
           </div>
           <p>Small, repeatable sessions beat heroic catch-up days.</p>
         </div>
@@ -59,6 +59,7 @@
             <h1 id="pageTitle">Good morning, builder.</h1>
           </div>
           <div class="topbar-actions">
+            <button class="quiet-button" id="plannerSettings" type="button">Plan settings</button>
             <button class="quiet-button" id="monoButton" type="button">B/W mode</button>
             <button class="quiet-button" id="focusButton" type="button">Focus view</button>
             <button class="avatar" type="button" aria-label="Your profile">A</button>
@@ -121,7 +122,7 @@
             </article>
             <article class="stat-card ink">
               <span class="stat-label">Estimated load</span>
-              <strong><span id="weekHours">0</span><small> / 16h</small></strong>
+              <strong><span id="weekHours">0</span><small> / <span id="weeklyCapacityStat">16</span>h</small></strong>
               <div class="stat-track"><span id="hoursProgress"></span></div>
               <span class="stat-caption" id="weekEstimateCaption">At 1.5× + expected problem time</span>
             </article>
@@ -264,11 +265,42 @@
               <li>Validate it with matching A2Z problems.</li>
               <li>Log anything that needed a hint and revisit it later.</li>
             </ol>
-            <p class="method-note"><strong>Planning rule:</strong> video time is the real lesson duration ÷ 1.5. For each problem, enter its expected average solve time when you log it; the dashboard uses 45 minutes only as a transparent fallback.</p>
+            <p class="method-note" id="methodNote"><strong>Planning rule:</strong> video time is the real lesson duration divided by your playback speed. Each problem uses your expected average solve time unless you give it a specific estimate.</p>
           </article>
         </section>
       </main>
     </div>
+
+    <dialog class="log-modal" id="plannerModal">
+      <form method="dialog" id="plannerForm">
+        <div class="modal-heading">
+          <div>
+            <span class="eyebrow">PLANNER SETTINGS</span>
+            <h2>Make the plan fit you.</h2>
+          </div>
+          <button class="close-button" type="button" id="closePlannerModal" aria-label="Close">×</button>
+        </div>
+        <label>
+          Video playback speed
+          <input id="playbackSpeed" name="playbackSpeed" type="number" min="0.5" max="3" step="0.25" value="1.5" required />
+        </label>
+        <label>
+          Default expected solve time <span class="optional">minutes per problem</span>
+          <input id="defaultProblemMinutes" name="defaultProblemMinutes" type="number" min="5" max="300" value="45" required />
+        </label>
+        <div class="form-row">
+          <label>
+            Study time on normal days <span class="optional">hours</span>
+            <input id="dailyCapacity" name="dailyCapacity" type="number" min="0.5" max="12" step="0.5" value="2" required />
+          </label>
+          <label>
+            Study time on Tuesday <span class="optional">hours</span>
+            <input id="tuesdayCapacity" name="tuesdayCapacity" type="number" min="0.5" max="12" step="0.5" value="4" required />
+          </label>
+        </div>
+        <button class="primary-button full-width" type="submit">Update plan <span>→</span></button>
+      </form>
+    </dialog>
 
     <dialog class="log-modal" id="logModal">
       <form method="dialog" id="questionForm">
