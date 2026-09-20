@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A focused, personal DSA dashboard for 100xDevs, Codeforces, and Striver A2Z."
+    />
+    <title>DSA Command Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Main navigation">
+        <a class="brand" href="#dashboard" data-view-link="dashboard">
+          <span class="brand-mark">ds</span>
+          <span>study / system</span>
+        </a>
+
+        <nav class="primary-nav">
+          <button class="nav-link active" type="button" data-view="dashboard">
+            <span class="nav-icon">◉</span> Dashboard
+          </button>
+          <button class="nav-link" type="button" data-view="roadmap">
+            <span class="nav-icon">⌁</span> Roadmap
+          </button>
+          <button class="nav-link" type="button" data-view="practice">
+            <span class="nav-icon">✓</span> Practice log
+          </button>
+          <button class="nav-link" type="button" data-view="resources">
+            <span class="nav-icon">↗</span> Resources
+          </button>
+        </nav>
+
+        <div class="sidebar-foot">
+          <div class="mini-target">
+            <span class="eyebrow">weekly capacity</span>
+            <strong>16 hours</strong>
+            <span>2h daily · 4h Tuesday</span>
+          </div>
+          <p>Small, repeatable sessions beat heroic catch-up days.</p>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <button class="mobile-menu" id="mobileMenu" type="button" aria-label="Open navigation">
+            <span></span><span></span>
+          </button>
+          <div>
+            <p class="eyebrow" id="todayLabel">YOUR DSA SYSTEM</p>
+            <h1 id="pageTitle">Good morning, builder.</h1>
+          </div>
+          <div class="topbar-actions">
+            <button class="quiet-button" id="focusButton" type="button">Focus view</button>
+            <button class="avatar" type="button" aria-label="Your profile">A</button>
+          </div>
+        </header>
+
+        <section class="view active" id="dashboardView" data-view-panel="dashboard">
+          <section class="hero-grid">
+            <article class="hero-card">
+              <div class="hero-card-top">
+                <span class="eyebrow">THIS WEEK / <span id="heroWeek">01</span></span>
+                <button class="link-button" id="viewRoadmap" type="button">View roadmap <span>→</span></button>
+              </div>
+              <h2 id="heroTitle">Recursion foundations</h2>
+              <p id="heroDescription">Build a reliable base: base cases, recursive calls, and tracing the stack.</p>
+              <div class="hero-meta">
+                <span class="topic-chip" id="heroTopic">RECURSION</span>
+                <span id="lessonCount">3 lessons planned</span>
+                <span id="weeklyEstimate">Calculating study load…</span>
+              </div>
+              <div class="progress-line" aria-label="Weekly task progress">
+                <span id="weekProgressBar"></span>
+              </div>
+              <div class="hero-progress-row">
+                <strong id="weekProgressLabel">0 of 7 sessions complete</strong>
+                <span id="weekProgressPercent">0%</span>
+              </div>
+            </article>
+
+            <article class="streak-card">
+              <div class="streak-orbit" aria-hidden="true">
+                <div class="orbit-center"><span id="streakCount">0</span><small>day streak</small></div>
+              </div>
+              <div>
+                <span class="eyebrow">CONSISTENCY</span>
+                <h3>Keep the chain alive.</h3>
+                <p>Check off one study session to start your streak.</p>
+              </div>
+            </article>
+          </section>
+
+          <section class="stats-grid" aria-label="Progress overview">
+            <article class="stat-card coral">
+              <span class="stat-label">100x lessons</span>
+              <strong><span id="lessonDone">0</span><small> / 64</small></strong>
+              <div class="stat-track"><span id="lessonProgress"></span></div>
+              <span class="stat-caption">Course learning spine</span>
+            </article>
+            <article class="stat-card blue">
+              <span class="stat-label">A2Z problems</span>
+              <strong><span id="a2zDone">0</span><small> / 455</small></strong>
+              <div class="stat-track"><span id="a2zProgress"></span></div>
+              <span class="stat-caption">Practice checklist</span>
+            </article>
+            <article class="stat-card lime">
+              <span class="stat-label">Codeforces</span>
+              <strong><span id="cfDone">0</span><small> solved</small></strong>
+              <div class="stat-track"><span id="cfProgress"></span></div>
+              <span class="stat-caption">100x group practice</span>
+            </article>
+            <article class="stat-card ink">
+              <span class="stat-label">Estimated load</span>
+              <strong><span id="weekHours">0</span><small> / 16h</small></strong>
+              <div class="stat-track"><span id="hoursProgress"></span></div>
+              <span class="stat-caption" id="weekEstimateCaption">At 1.5× + expected problem time</span>
+            </article>
+          </section>
+
+          <section class="content-grid dashboard-grid">
+            <article class="panel week-panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="eyebrow">CURRENT SPRINT</span>
+                  <h2>This week, on purpose.</h2>
+                </div>
+                <div class="week-switcher" aria-label="Change week">
+                  <button id="previousWeek" type="button" aria-label="Previous week">←</button>
+                  <span id="weekSwitcherLabel">WEEK 01</span>
+                  <button id="nextWeek" type="button" aria-label="Next week">→</button>
+                </div>
+              </div>
+              <div class="session-list" id="sessionList"></div>
+            </article>
+
+            <aside class="dashboard-side">
+              <article class="panel daily-card">
+                <div class="panel-heading compact">
+                  <div>
+                    <span class="eyebrow">TODAY'S MOVE</span>
+                    <h2 id="todayTaskTitle">Choose a task.</h2>
+                  </div>
+                  <span class="day-badge" id="todayDayBadge">MON</span>
+                </div>
+                <p id="todayTaskDescription">Your next unfinished session will appear here.</p>
+                <button class="primary-button" id="startTask" type="button">Start next session <span>→</span></button>
+              </article>
+
+              <article class="panel resources-mini">
+                <div class="panel-heading compact">
+                  <div>
+                    <span class="eyebrow">ONE-CLICK DESK</span>
+                    <h2>Open your tools.</h2>
+                  </div>
+                </div>
+                <a class="resource-mini-link" id="courseQuickLink" target="_blank" rel="noreferrer">100x lectures <span>↗</span></a>
+                <a class="resource-mini-link" id="codeforcesQuickLink" target="_blank" rel="noreferrer">100x Codeforces <span>↗</span></a>
+                <a class="resource-mini-link" id="a2zQuickLink" target="_blank" rel="noreferrer">Striver A2Z <span>↗</span></a>
+                <a class="resource-mini-link" id="blogsQuickLink" target="_blank" rel="noreferrer">DSA blogs <span>↗</span></a>
+              </article>
+            </aside>
+          </section>
+
+          <section class="content-grid lower-grid">
+            <article class="panel momentum-panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="eyebrow">MOMENTUM</span>
+                  <h2>Your last 7 days</h2>
+                </div>
+                <span class="legend"><i></i> completed session</span>
+              </div>
+              <div class="activity-chart" id="activityChart" aria-label="Seven-day study activity"></div>
+            </article>
+
+            <article class="panel log-preview">
+              <div class="panel-heading">
+                <div>
+                  <span class="eyebrow">PRACTICE LOG</span>
+                  <h2>Recent attempts</h2>
+                </div>
+                <button class="link-button" id="openPractice" type="button">See all <span>→</span></button>
+              </div>
+              <div class="attempt-list" id="recentAttempts"></div>
+            </article>
+          </section>
+        </section>
+
+        <section class="view" id="roadmapView" data-view-panel="roadmap">
+          <section class="view-intro">
+            <span class="eyebrow">22-WEEK FIRST PASS</span>
+            <h2>Learn the pattern. Then earn it through practice.</h2>
+            <p>Each card follows your 16-hour week: 100x lectures first, Codeforces drills next, then matching Striver A2Z questions.</p>
+          </section>
+          <div class="roadmap-key">
+            <span><i class="key-dot current"></i> Current sprint</span>
+            <span><i class="key-dot done"></i> Complete</span>
+            <span><i class="key-dot"></i> Upcoming</span>
+          </div>
+          <div class="roadmap-grid" id="roadmapGrid"></div>
+        </section>
+
+        <section class="view" id="practiceView" data-view-panel="practice">
+          <section class="view-intro split-intro">
+            <div>
+              <span class="eyebrow">ATTEMPT → REVIEW → RETRY</span>
+              <h2>Practice with a memory.</h2>
+              <p>Log every meaningful problem. Yellow and red problems reappear in your review queue.</p>
+            </div>
+            <button class="primary-button" id="openLogModal" type="button">Log a problem <span>+</span></button>
+          </section>
+          <div class="practice-summary" id="practiceSummary"></div>
+          <article class="panel practice-table-panel">
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Problem</th>
+                    <th>Source</th>
+                    <th>Expected time</th>
+                    <th>Result</th>
+                    <th>Logged</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="practiceTableBody"></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <section class="view" id="resourcesView" data-view-panel="resources">
+          <section class="view-intro">
+            <span class="eyebrow">YOUR STUDY DESK</span>
+            <h2>Every important link, exactly where you need it.</h2>
+          <p>Open the lesson, the matching practice source, or your full problem sheet without hunting through bookmarks.</p>
+          </section>
+          <div class="resource-cards" id="resourceCards"></div>
+          <article class="panel blog-shelf">
+            <div class="panel-heading">
+              <div>
+                <span class="eyebrow">READING ROOM</span>
+                <h2>Blogs worth keeping open.</h2>
+              </div>
+            </div>
+            <div class="blog-links" id="blogLinks"></div>
+          </article>
+          <article class="panel method-panel">
+            <span class="eyebrow">THE SYSTEM</span>
+            <h2>One concept, one loop.</h2>
+            <ol>
+              <li>Learn it from the 100x lecture.</li>
+              <li>Try the current topic’s Codeforces group questions.</li>
+              <li>Validate it with matching A2Z problems.</li>
+              <li>Log anything that needed a hint and revisit it later.</li>
+            </ol>
+            <p class="method-note"><strong>Planning rule:</strong> video time is the real lesson duration ÷ 1.5. For each problem, enter its expected average solve time when you log it; the dashboard uses 45 minutes only as a transparent fallback.</p>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <dialog class="log-modal" id="logModal">
+      <form method="dialog" id="questionForm">
+        <div class="modal-heading">
+          <div>
+            <span class="eyebrow">PRACTICE LOG</span>
+            <h2>What did you attempt?</h2>
+          </div>
+          <button class="close-button" value="cancel" type="button" id="closeLogModal" aria-label="Close">×</button>
+        </div>
+        <label>
+          Problem name
+          <input id="problemName" name="problemName" placeholder="e.g. Subset sums" maxlength="80" required />
+        </label>
+        <div class="form-row">
+          <label>
+            Source
+            <select id="problemSource" name="problemSource">
+              <option>Striver A2Z</option>
+              <option>100x / Codeforces</option>
+              <option>LeetCode</option>
+              <option>Other</option>
+            </select>
+          </label>
+          <label>
+            Result
+            <select id="problemResult" name="problemResult">
+              <option value="green">Green · independent</option>
+              <option value="yellow">Yellow · needed a hint</option>
+              <option value="red">Red · revisit later</option>
+            </select>
+          </label>
+        </div>
+        <label>
+          Expected average solve time <span class="optional">minutes · edit when the problem page gives a better estimate</span>
+          <input id="problemExpectedTime" name="problemExpectedTime" type="number" min="5" max="300" value="45" required />
+        </label>
+        <label>
+          Problem link <span class="optional">optional</span>
+          <input id="problemLink" name="problemLink" type="url" placeholder="https://..." />
+        </label>
+        <button class="primary-button full-width" value="default" type="submit">Save attempt <span>→</span></button>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
